@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number Management Service</title>
+</head>
+<body>
+    <h1>Number Management Service</h1>
+    <form id="numberForm">
+        <label for="url">Enter URL:</label>
+        <input type="text" id="url" name="url" placeholder="https://example.com">
+        <button type="button" id="addUrl">Add URL</button>
+    </form>
+    <button type="button" id="fetchNumbers">Fetch Numbers</button>
+    <div id="result"></div>
+    <script src="frontend.js"></script>
+</body>
+</html>
+___________________________________________________________________
+
+Front end:
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlInput = document.getElementById('url');
+    const addUrlButton = document.getElementById('addUrl');
+    const fetchNumbersButton = document.getElementById('fetchNumbers');
+    const resultDiv = document.getElementById('result');
+    const urls = [];
+
+    addUrlButton.addEventListener('click', function() {
+        const url = urlInput.value.trim();
+        if (url !== '') {
+            urls.push(url);
+            urlInput.value = '';
+        }
+    });
+
+    fetchNumbersButton.addEventListener('click', function() {
+        if (urls.length === 0) {
+            resultDiv.textContent = 'Please add at least one URL.';
+            return;
+        }
+
+        // Construct the query parameter string
+        const urlParams = new URLSearchParams();
+        urls.forEach((url) => {
+            urlParams.append('URL', url);
+        });
+
+        // Make the API request to the microserver
+        fetch(`/numbers?${urlParams}`)
+            .then((response) => response.json())
+            .then((data) => {
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            })
+            .catch((error) => {
+                resultDiv.textContent = 'Error fetching numbers: ' + error.message;
+            });
+    });
+});
+_________________________________________________________________
+
+
+Backend:  
+
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/numbers', (req, res) => {
+    const urls = req.query.URL;
+
+    res.json({ result: 'Numbers fetched successfully' });
+});
+
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
+});
